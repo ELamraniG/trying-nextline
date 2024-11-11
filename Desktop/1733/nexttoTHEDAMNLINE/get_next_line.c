@@ -1,6 +1,6 @@
 #include "get_next_line.h"
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 30
+# define BUFFER_SIZE 60
 #endif
 
 static int ft_mewline(char *str, int bytesread)
@@ -33,7 +33,7 @@ char *get_next_line(int fd)
 		return (NULL);
 	dst = NULL;
 	tmp = NULL;
-	if (rest)
+	if (rest != NULL)
 	{
 		nl_pos = ft_mewline(rest, ft_strlen(rest));
 		if (nl_pos != -1)
@@ -59,7 +59,6 @@ char *get_next_line(int fd)
 	}
 	while ((bytesread = read(fd, buffer, BUFFER_SIZE)) > 0)
     {
-		printf("\n BYTES READ ==== %d\n",bytesread);
 		buffer[bytesread] = 0;
 		nl_pos = ft_mewline(buffer, bytesread);
 		if (nl_pos != -1)
@@ -77,25 +76,14 @@ char *get_next_line(int fd)
 			tmp2 = dst;
 			dst = ft_strjoin(dst, buffer);
 			free(tmp2);
+			
 		}
 	}
+
+	if (dst && *dst)
     return (dst);
+
+free(dst);
+return (NULL);
 }
 
-int main()
-{
-	int fd = open("text.txt", O_RDWR , 0777);
-	char *s = get_next_line(fd);
-	printf("%s",s);
-	s = get_next_line(fd);
-	printf("%s",s);
-	s = get_next_line(fd);
-	printf("%s",s);
-	s = get_next_line(fd);
-	printf("%s",s);
-	s = get_next_line(fd);
-	printf("%p",s);
-	s = get_next_line(fd);
-	printf("%s",s);
-
-}
