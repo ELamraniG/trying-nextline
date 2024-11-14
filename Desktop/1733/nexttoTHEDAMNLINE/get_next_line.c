@@ -23,7 +23,45 @@ int	ft_mew_line(char *str)
 	}
 	return (-1);
 }
+int	ft_get_rest(char *rest)
+{
+	int	nl_pos;
 
+	nl_pos = ft_mew_line(rest);
+	
+	if (nl_pos >= 0)
+	{
+		rest = ft_substr(rest, nl_pos + 1, ft_strlen(rest) - nl_pos);
+		return (1);
+	}
+	else 
+		return (0);
+}
+void ft_read_next(int fd, char *dst, char *buffer, char *rest)
+{
+	int 	nl_pos;
+	char	*tmp;
+	while (read(fd, buffer, BUFFER_SIZE) > 0)
+	{
+		buffer[BUFFER_SIZE + 1] = 0;
+		nl_pos = ft_mew_line(buffer);
+		if(nl_pos == -1)
+		{
+			tmp = dst;
+			dst = ft_strjoin(dst,buffer);
+
+		}
+		else
+		{
+			tmp = dst;
+			dst = ft_strjoin(dst,buffer);
+
+			tmp = rest;
+			rest = ft_substr(buffer,nl_pos + 1, ft_strlen(buffer) - nl_pos - 1);
+
+		}
+	}
+}
 char	*get_next_line(int fd)
 {
 	char		*buffer;
@@ -44,45 +82,26 @@ char	*get_next_line(int fd)
 	if(!buffer)
 	{
 		if (rest)
-		{
-		free(rest);
+		{;
 		rest = NULL;
 		}
 		if (dst)
 		{
-		free(dst);
 		dst = NULL;
 		}
 		return (NULL);
 	}
-	dst = ft_read_next(fd, dst, buffer);
+	ft_read_next(fd, dst, buffer, rest);
 	return (dst);
 }
-int	ft_get_rest(char *rest)
-{
-	int	nl_pos;
 
-	nl_pos = ft_mew_line(rest);
+int main()
+{
+	int fd = open("text.txt", O_RDWR, 0777);
 	
-	if (nl_pos >= 0)
+	char *s;
+	while ((s = get_next_line(fd)) != NULL)
 	{
-		rest = ft_substr(rest, nl_pos + 1, ft_strlen(rest) - nl_pos);
-		return (1);
-	}
-	else 
-		return (0);
-}
-ft_read_next(int fd, char *dst, char *buffer)
-{
-	int nl_pos;
-
-	while (read(fd, buffer, BUFFER_SIZE) > 0)
-	{
-		buffer[BUFFER_SIZE + 1] = 0;
-		nl_pos = ft_mew_line(buffer);
-		if(nl_pos == -1)
-		{
-			dst = 
-		}
+	printf("abcd%s",s);
 	}
 }
