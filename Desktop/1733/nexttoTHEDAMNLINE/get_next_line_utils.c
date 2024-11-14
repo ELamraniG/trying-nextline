@@ -120,5 +120,6 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 	if (!ss)
 		return (NULL);
 	ft_strlcpy(ss, s + start, len + 1);
+	free (s);
 	return (ss);
 }

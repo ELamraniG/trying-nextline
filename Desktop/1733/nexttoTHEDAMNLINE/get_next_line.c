@@ -1,89 +1,88 @@
 #include "get_next_line.h"
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 60
+# define BUFFER_SIZE 10000000
 #endif
 
-static int ft_mewline(char *str, int bytesread)
-{
-    int i;
 
-    i = 0;
-    if (!str)
-        return (-1);
-    while (i < bytesread)
-    {
-        if (str[i] == '\n')
-            return (i);
-        i++;
-    }
-    return (-1);
+
+
+
+
+int	ft_mew_line(char *str)
+{
+	int	i;
+
+	i = 0;
+	if (str == NULL)
+		return (-1);
+	while (str[i])
+	{
+		if(str[i] == '\n')
+			return (i);
+		i++;
+	}
+	return (-1);
 }
 
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-    static char *rest = NULL;
-    char        buffer[BUFFER_SIZE + 1];
-    char        *dst;
-    char        *tmp;
-	char		*tmp2;
-    int 		bytesread;
-    int         nl_pos;
-	
+	char		*buffer;
+	char		*dst;
+	static char	*rest;
+
+	dst = NULL;
 	if (fd < 0)
 		return (NULL);
-	dst = NULL;
-	tmp = NULL;
 	if (rest != NULL)
 	{
-		nl_pos = ft_mewline(rest, ft_strlen(rest));
-		if (nl_pos != -1)
-		{
-			tmp = ft_substr(rest, 0, nl_pos + 1);
-			tmp2 = dst;
-			dst = ft_strjoin(dst, tmp);
-			free(tmp2);
-			free (tmp);
-			tmp = rest;
-			rest = ft_substr(rest, nl_pos + 1, ft_strlen(rest));
-			free(tmp);
-			return (dst);
-		}
+		if (ft_get_rest(rest) == 1)
+			return (rest);
 		else
-		{
-			tmp2 =dst;
-			dst = ft_strjoin(dst,rest);
-			free(tmp2);
-			free(rest);
-			rest = NULL;
-		}
+		dst = ft_substr(rest, 0, ft_strlen(rest));
 	}
-	while ((bytesread = read(fd, buffer, BUFFER_SIZE)) > 0)
-    {
-		buffer[bytesread] = 0;
-		nl_pos = ft_mewline(buffer, bytesread);
-		if (nl_pos != -1)
+	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if(!buffer)
+	{
+		if (rest)
 		{
-			tmp = ft_substr(buffer, 0, nl_pos + 1);
-			tmp2 = dst;
-			dst = ft_strjoin(dst, tmp);
-			free(tmp2);
-			free (tmp);
-			rest = ft_substr(buffer, nl_pos + 1, bytesread - nl_pos - 1);
-			return (dst);
+		free(rest);
+		rest = NULL;
 		}
-		else
+		if (dst)
 		{
-			tmp2 = dst;
-			dst = ft_strjoin(dst, buffer);
-			free(tmp2);
-			
+		free(dst);
+		dst = NULL;
 		}
+		return (NULL);
 	}
-
-	if (dst && *dst)
-    return (dst);
-
-free(dst);
-return (NULL);
+	dst = ft_read_next(fd, dst, buffer);
+	return (dst);
 }
+int	ft_get_rest(char *rest)
+{
+	int	nl_pos;
 
+	nl_pos = ft_mew_line(rest);
+	
+	if (nl_pos >= 0)
+	{
+		rest = ft_substr(rest, nl_pos + 1, ft_strlen(rest) - nl_pos);
+		return (1);
+	}
+	else 
+		return (0);
+}
+ft_read_next(int fd, char *dst, char *buffer)
+{
+	int nl_pos;
+
+	while (read(fd, buffer, BUFFER_SIZE) > 0)
+	{
+		buffer[BUFFER_SIZE + 1] = 0;
+		nl_pos = ft_mew_line(buffer);
+		if(nl_pos == -1)
+		{
+			dst = 
+		}
+	}
+}
