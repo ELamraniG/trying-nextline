@@ -1,67 +1,122 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: moel-amr <moel-amr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/15 18:55:12 by moel-amr          #+#    #+#             */
+/*   Updated: 2024/11/15 22:37:18 by moel-amr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 10000000
-#endif
 
-
-
-
-
-
-int	ft_mew_line(char *str)
+static int	ft_mew_line(char *str, int n, char **dst, char **rest)
 {
-	int	i;
+	int		i;
+	char	*tmp;
 
 	i = 0;
-	if (str == NULL)
-		return (-1);
-	while (str[i])
+	if (n == 1)
 	{
-		if(str[i] == '\n')
-			return (i);
-		i++;
+		if (str == NULL || *str == 0)
+			return (-1);
+		while (str[i])
+		{
+			if (str[i] == '\n')
+				return (i);
+			i++;
+		}
+		return (-1);
 	}
-	return (-1);
+	else
+	{
+		tmp = *dst;
+		*dst = ft_substr(*rest, 0, ft_strlen(*rest));
+		free(tmp);
+		free(*rest);
+		*rest = NULL;
+	}
+	return (0);
 }
-int	ft_get_rest(char *rest)
-{
-	int	nl_pos;
 
-	nl_pos = ft_mew_line(rest);
-	
+static int	ft_do_the_while(char **dst, char **rest, char **buffer)
+{
+	int		nl_pos;
+	char	*tmp;
+	char	*tmp2;
+
+	nl_pos = ft_mew_line(*buffer, 1, NULL, NULL);
+	if (nl_pos == -1)
+	{
+		tmp = *dst;
+		*dst = ft_strjoin(*dst, *buffer);
+		free(tmp);
+	}
+	else
+	{
+		tmp = *dst;
+		tmp2 = ft_substr(*buffer, 0, nl_pos + 1);
+		*dst = ft_strjoin(*dst, tmp2);
+		free(tmp2);
+		free(tmp);
+		tmp = *rest;
+		*rest = ft_substr(*buffer, nl_pos + 1, ft_strlen(*buffer) - nl_pos - 1);
+		free(tmp);
+		free(*buffer);
+		return (-1);
+	}
+	return (0);
+}
+
+static int	ft_get_rest(char **rest, char **dst)
+{
+	int		nl_pos;
+	char	*tmp2;
+
+	nl_pos = ft_mew_line(*rest, 1, NULL, NULL);
 	if (nl_pos >= 0)
 	{
-		rest = ft_substr(rest, nl_pos + 1, ft_strlen(rest) - nl_pos);
+		tmp2 = *rest;
+		*dst = ft_substr(*rest, 0, nl_pos + 1);
+		*rest = ft_substr(*rest, nl_pos + 1, ft_strlen(*rest) - nl_pos - 1);
+		free(tmp2);
 		return (1);
 	}
-	else 
+	else
 		return (0);
 }
-void ft_read_next(int fd, char *dst, char *buffer, char *rest)
+
+static void	ft_read_next(int fd, char **dst, char **buffer, char **rest)
 {
-	int 	nl_pos;
-	char	*tmp;
-	while (read(fd, buffer, BUFFER_SIZE) > 0)
+	int	bytesread;
+
+	bytesread = read(fd, *buffer, BUFFER_SIZE);
+	while ((bytesread) > 0)
 	{
-		buffer[BUFFER_SIZE + 1] = 0;
-		nl_pos = ft_mew_line(buffer);
-		if(nl_pos == -1)
-		{
-			tmp = dst;
-			dst = ft_strjoin(dst,buffer);
-
-		}
-		else
-		{
-			tmp = dst;
-			dst = ft_strjoin(dst,buffer);
-
-			tmp = rest;
-			rest = ft_substr(buffer,nl_pos + 1, ft_strlen(buffer) - nl_pos - 1);
-
-		}
+		(*buffer)[bytesread] = 0;
+		if ((ft_do_the_while(dst, rest, buffer)) == -1)
+			return ;
+		bytesread = read(fd, *buffer, BUFFER_SIZE);
 	}
+	if (bytesread == -1)
+	{
+		free(*buffer);
+		free(*rest);
+		free(*dst);
+		*dst = NULL;
+		*buffer = NULL;
+		*rest = NULL;
+	}
+	if (*dst && (*dst)[0] == 0)
+	{
+		free(*dst);
+		*dst = NULL;
+	}
+	free(*buffer);
 }
+
 char	*get_next_line(int fd)
 {
 	char		*buffer;
@@ -69,39 +124,22 @@ char	*get_next_line(int fd)
 	static char	*rest;
 
 	dst = NULL;
-	if (fd < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (rest != NULL)
 	{
-		if (ft_get_rest(rest) == 1)
-			return (rest);
+		if (ft_get_rest(&rest, &dst) == 1)
+			return (dst);
 		else
-		dst = ft_substr(rest, 0, ft_strlen(rest));
+			ft_mew_line(NULL, 2, &dst, &rest);
 	}
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if(!buffer)
+	if (!buffer)
 	{
-		if (rest)
-		{;
-		rest = NULL;
-		}
-		if (dst)
-		{
-		dst = NULL;
-		}
+		free(rest);
+		free(dst);
 		return (NULL);
 	}
-	ft_read_next(fd, dst, buffer, rest);
+	ft_read_next(fd, &dst, &buffer, &rest);
 	return (dst);
-}
-
-int main()
-{
-	int fd = open("text.txt", O_RDWR, 0777);
-	
-	char *s;
-	while ((s = get_next_line(fd)) != NULL)
-	{
-	printf("abcd%s",s);
-	}
 }

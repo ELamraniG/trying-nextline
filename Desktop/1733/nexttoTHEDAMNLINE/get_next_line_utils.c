@@ -1,5 +1,16 @@
-#include "get_next_line.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: moel-amr <moel-amr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/15 19:09:48 by moel-amr          #+#    #+#             */
+/*   Updated: 2024/11/15 22:04:02 by moel-amr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "get_next_line.h"
 
 size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
 {
@@ -8,7 +19,7 @@ size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
 	size_t	i;
 
 	i = 0;
-	if (dst == NULL || src == NULL || dstsize == 0)
+	if ((dst == NULL && src == NULL) || dstsize == 0)
 		return (0);
 	slen = ft_strlen(src);
 	dlen = ft_strlen(dst);
@@ -26,32 +37,10 @@ size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
 	return (dlen + slen);
 }
 
-
-size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
-{
-	size_t	i;
-	size_t	slen;
-
-	if (dst == NULL || src == NULL || dstsize == 0)
-		return (0);
-	i = 0;
-	slen = ft_strlen(src);
-	if (dstsize == 0)
-		return (slen);
-	while (i < dstsize - 1 && src[i])
-	{
-		dst[i] = src[i];
-		i++;
-	}
-	dst[i] = 0;
-	return (slen);
-}
-
-
 size_t	ft_strlen(const char *s)
 {
 	size_t	i;
-	
+
 	if (s == NULL)
 		return (0);
 	i = 0;
@@ -70,7 +59,8 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		str = malloc (sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
 		if (!str)
 			return (NULL);
-		ft_strlcpy(str, s1, ft_strlen(s1) + 1);
+		str[0] = 0;
+		ft_strlcat(str, s1, ft_strlen(s1) + 1);
 		ft_strlcat(str, s2, ft_strlen(s1) + ft_strlen(s2) + 1);
 	}
 	else if (s1)
@@ -78,18 +68,15 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		str = ft_strdup(s1);
 		if (str == NULL)
 			return (NULL);
-	
 	}
 	else if (s2)
 	{
 		str = ft_strdup(s2);
 		if (str == NULL)
 			return (NULL);
-	
 	}
 	return (str);
 }
-
 
 char	*ft_strdup(const char *s1)
 {
@@ -102,7 +89,8 @@ char	*ft_strdup(const char *s1)
 	snew = malloc(sizeof(char) * (slen + 1));
 	if (snew == NULL)
 		return (NULL);
-	ft_strlcpy(snew, s1, slen + 1);
+	snew[0] = 0;
+	ft_strlcat(snew, s1, slen + 1);
 	return (snew);
 }
 
@@ -119,7 +107,7 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 	ss = malloc(sizeof(char) * (len + 1));
 	if (!ss)
 		return (NULL);
-	ft_strlcpy(ss, s + start, len + 1);
-	free ((char *)s);
+	ss[0] = 0;
+	ft_strlcat(ss, s + start, len + 1);
 	return (ss);
 }
